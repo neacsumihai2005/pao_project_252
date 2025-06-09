@@ -35,7 +35,9 @@ public class Restaurant {
     @Override
     public String toString() {
         return "Restaurant{" +
-                "name='" + name + '\'' +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", address=" + (address != null ? address.toString() : "null") +
                 '}';
     }
 }

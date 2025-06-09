@@ -122,4 +122,27 @@ public class AddressDatabaseService implements DatabaseService<Address> {
         }
         return addresses;
     }
+
+    public Address findByDetails(String street, String city, String zipCode) throws SQLException {
+        String sql = "SELECT * FROM addresses WHERE street = ? AND city = ? AND zip_code = ?";
+        try (Connection conn = dbConfig.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, street);
+            pstmt.setString(2, city);
+            pstmt.setString(3, zipCode);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    Address address = new Address(
+                        rs.getString("street"),
+                        rs.getString("city"),
+                        rs.getString("zip_code")
+                    );
+                    address.setId(rs.getInt("id"));
+                    address.setState(rs.getString("state"));
+                    return address;
+                }
+            }
+        }
+        return null;
+    }
 } 

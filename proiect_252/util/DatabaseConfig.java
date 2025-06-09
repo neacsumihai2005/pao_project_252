@@ -10,7 +10,6 @@ public class DatabaseConfig {
     private static final String PASSWORD = "root";
     
     private static DatabaseConfig instance;
-    private Connection connection;
     
     private DatabaseConfig() {
         try {
@@ -28,19 +27,6 @@ public class DatabaseConfig {
     }
     
     public Connection getConnection() throws SQLException {
-        if (connection == null || connection.isClosed()) {
-            connection = DriverManager.getConnection(URL, USER, PASSWORD);
-        }
-        return connection;
-    }
-    
-    public void closeConnection() {
-        try {
-            if (connection != null && !connection.isClosed()) {
-                connection.close();
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        return DriverManager.getConnection(URL, USER, PASSWORD);
     }
 } 

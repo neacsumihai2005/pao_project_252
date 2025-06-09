@@ -185,7 +185,14 @@ public class DatabaseMenu {
         String zipCode = scanner.nextLine();
 
         try {
-            Address address = new Address(street, city, zipCode);
+            // First check if the address already exists
+            Address address = addressService.findByDetails(street, city, zipCode);
+            if (address == null) {
+                // Only create a new address if one doesn't exist
+                address = new Address(street, city, zipCode);
+                addressService.create(address);
+            }
+            
             Restaurant restaurant = new Restaurant(name, address);
             restaurantService.create(restaurant);
             auditService.logAction("ADD_RESTAURANT_VIA_MENU");
@@ -213,11 +220,16 @@ public class DatabaseMenu {
         try {
             List<Restaurant> restaurants = restaurantService.readAll();
             System.out.println("\nAll Restaurants:");
+            System.out.println("Number of restaurants found: " + restaurants.size());
             for (Restaurant r : restaurants) {
-                System.out.println(r);
+                System.out.println("Restaurant ID: " + r.getId());
+                System.out.println("Restaurant Name: " + r.getName());
+                System.out.println("Restaurant Address: " + (r.getAddress() != null ? r.getAddress().toString() : "null"));
+                System.out.println("-------------------");
             }
         } catch (SQLException e) {
             System.out.println("Error listing restaurants: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
