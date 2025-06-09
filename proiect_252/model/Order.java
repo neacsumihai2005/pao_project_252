@@ -1,6 +1,7 @@
 package proiect_252.model;
 
 import java.util.List;
+import java.util.ArrayList;
 
 public class Order {
     private int id;
@@ -8,6 +9,10 @@ public class Order {
     private List<MenuItem> items;
     private Address deliveryAddress;
     private double totalAmount;
+
+    public Order() {
+        this.items = new ArrayList<>();
+    }
 
     public Order(User user, List<MenuItem> items, Address deliveryAddress) {
         this.user = user;
@@ -35,10 +40,15 @@ public class Order {
 
     @Override
     public String toString() {
-        return "Order{" +
-                "user=" + user +
-                ", items=" + items +
-                ", totalAmount=" + totalAmount +
-                '}';
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("Order{id=%d, user=%s, deliveryAddress=%s, totalAmount=%.2f, items=[\n", 
+            id, user, deliveryAddress, totalAmount));
+        
+        for (MenuItem item : items) {
+            sb.append("  ").append(item).append("\n");
+        }
+        sb.append("]}");
+        
+        return sb.toString();
     }
 }

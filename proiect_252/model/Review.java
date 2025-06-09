@@ -10,6 +10,10 @@ public class Review {
     private String comment;
     private LocalDateTime reviewDate;
 
+    public Review() {
+        this.reviewDate = LocalDateTime.now();
+    }
+
     public Review(User user, Restaurant restaurant, int rating, String comment) {
         this.user = user;
         this.restaurant = restaurant;
@@ -33,12 +37,12 @@ public class Review {
 
     @Override
     public String toString() {
-        return "Review{" +
-                "user=" + user +
-                ", restaurant=" + restaurant +
-                ", rating=" + rating +
-                ", comment='" + comment + '\'' +
-                ", reviewDate=" + reviewDate +
-                '}';
+        return String.format("Review #%d\nUser: %s\nRestaurant: %s\nRating: %d/5\nComment: %s\nDate: %s",
+                id,
+                user != null ? user.getName() : "Unknown",
+                restaurant != null ? restaurant.getName() : "Unknown",
+                rating,
+                comment != null ? comment : "No comment",
+                reviewDate != null ? reviewDate.toString() : "Unknown");
     }
 }

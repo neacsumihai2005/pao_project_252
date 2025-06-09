@@ -34,10 +34,9 @@ public class Restaurant {
 
     @Override
     public String toString() {
-        return "Restaurant{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", address=" + (address != null ? address.toString() : "null") +
-                '}';
+        return String.format("Restaurant #%d: %s\nAddress: %s", 
+            id, 
+            name, 
+            address != null ? address.toString() : "No address");
     }
 }

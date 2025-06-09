@@ -26,10 +26,11 @@ public class Address {
 
     @Override
     public String toString() {
-        return "Address{" +
-                "street='" + street + '\'' +
-                ", city='" + city + '\'' +
-                ", zipCode='" + zipCode + '\'' +
-                '}';
+        return String.format("Address #%d: %s, %s, %s %s", 
+            id,
+            street,
+            city,
+            state,
+            zipCode);
     }
 }

@@ -6,6 +6,9 @@ public class Driver {
     private String vehicleType;
     private String licenseNumber;
 
+    public Driver() {
+    }
+
     public Driver(String name, String vehicleType) {
         this.name = name;
         this.vehicleType = vehicleType;
@@ -22,9 +25,7 @@ public class Driver {
 
     @Override
     public String toString() {
-        return "Driver{" +
-                "name='" + name + '\'' +
-                ", vehicleType='" + vehicleType + '\'' +
-                '}';
+        return String.format("Driver{id=%d, name='%s', vehicleType='%s', licenseNumber='%s'}",
+            id, name, vehicleType, licenseNumber != null ? licenseNumber : "");
     }
 }

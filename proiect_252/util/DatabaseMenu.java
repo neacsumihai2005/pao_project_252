@@ -5,12 +5,17 @@ import proiect_252.service.*;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Scanner;
+import java.util.ArrayList;
 
 public class DatabaseMenu {
     private static final Scanner scanner = new Scanner(System.in);
-    private static final RestaurantDatabaseService restaurantService = RestaurantDatabaseService.getInstance();
     private static final UserDatabaseService userService = UserDatabaseService.getInstance();
+    private static final RestaurantDatabaseService restaurantService = RestaurantDatabaseService.getInstance();
+    private static final MenuItemDatabaseService menuItemService = MenuItemDatabaseService.getInstance();
     private static final AddressDatabaseService addressService = AddressDatabaseService.getInstance();
+    private static final DriverDatabaseService driverService = DriverDatabaseService.getInstance();
+    private static final OrderDatabaseService orderService = OrderDatabaseService.getInstance();
+    private static final ReviewDatabaseService reviewService = ReviewDatabaseService.getInstance();
     private static final AuditService auditService = AuditService.getInstance();
 
     public static void showMenu() {
@@ -105,9 +110,15 @@ public class DatabaseMenu {
         String zipCode = scanner.nextLine();
 
         try {
-            Address address = new Address(street, city, zipCode);
-            address.setState(state);
-            addressService.create(address);
+            // First check if the address already exists
+            Address address = addressService.findByDetails(street, city, zipCode);
+            if (address == null) {
+                // Only create a new address if one doesn't exist
+                address = new Address(street, city, zipCode);
+                address.setState(state);
+                addressService.create(address);
+            }
+            
             User user = new User(name, email);
             user.setAddress(address);
             userService.create(user);
@@ -124,6 +135,11 @@ public class DatabaseMenu {
         scanner.nextLine(); // Consume newline
 
         try {
+            User user = userService.read(id);
+            if (user == null) {
+                System.out.println("User not found!");
+                return;
+            }
             userService.delete(id);
             auditService.logAction("DELETE_USER_VIA_MENU");
             System.out.println("User deleted successfully!");
@@ -208,6 +224,11 @@ public class DatabaseMenu {
         scanner.nextLine(); // Consume newline
 
         try {
+            Restaurant restaurant = restaurantService.read(id);
+            if (restaurant == null) {
+                System.out.println("Restaurant not found!");
+                return;
+            }
             restaurantService.delete(id);
             auditService.logAction("DELETE_RESTAURANT_VIA_MENU");
             System.out.println("Restaurant deleted successfully!");
@@ -269,6 +290,8 @@ public class DatabaseMenu {
         scanner.nextLine(); // Consume newline
         System.out.print("Enter item name: ");
         String name = scanner.nextLine();
+        System.out.print("Enter item description: ");
+        String description = scanner.nextLine();
         System.out.print("Enter item price: ");
         double price = scanner.nextDouble();
         scanner.nextLine(); // Consume newline
@@ -277,8 +300,9 @@ public class DatabaseMenu {
             Restaurant restaurant = restaurantService.read(restaurantId);
             if (restaurant != null) {
                 MenuItem item = new MenuItem(name, price);
-                restaurant.getMenu().add(item);
-                restaurantService.update(restaurant);
+                item.setRestaurantId(restaurantId);
+                item.setDescription(description);
+                menuItemService.create(item);
                 auditService.logAction("ADD_MENU_ITEM_VIA_MENU");
                 System.out.println("Menu item added successfully!");
             } else {
@@ -290,23 +314,19 @@ public class DatabaseMenu {
     }
 
     private static void deleteMenuItem() {
-        System.out.print("Enter restaurant ID: ");
-        int restaurantId = scanner.nextInt();
-        scanner.nextLine(); // Consume newline
-        System.out.print("Enter menu item index to delete: ");
-        int index = scanner.nextInt();
+        System.out.print("Enter menu item ID to delete: ");
+        int id = scanner.nextInt();
         scanner.nextLine(); // Consume newline
 
         try {
-            Restaurant restaurant = restaurantService.read(restaurantId);
-            if (restaurant != null && index >= 0 && index < restaurant.getMenu().size()) {
-                restaurant.getMenu().remove(index);
-                restaurantService.update(restaurant);
-                auditService.logAction("DELETE_MENU_ITEM_VIA_MENU");
-                System.out.println("Menu item deleted successfully!");
-            } else {
-                System.out.println("Restaurant or menu item not found!");
+            MenuItem item = menuItemService.read(id);
+            if (item == null) {
+                System.out.println("Menu item not found!");
+                return;
             }
+            menuItemService.delete(id);
+            auditService.logAction("DELETE_MENU_ITEM_VIA_MENU");
+            System.out.println("Menu item deleted successfully!");
         } catch (SQLException e) {
             System.out.println("Error deleting menu item: " + e.getMessage());
         }
@@ -320,9 +340,14 @@ public class DatabaseMenu {
         try {
             Restaurant restaurant = restaurantService.read(restaurantId);
             if (restaurant != null) {
+                List<MenuItem> items = menuItemService.getMenuItemsByRestaurant(restaurantId);
                 System.out.println("\nMenu Items for " + restaurant.getName() + ":");
-                for (MenuItem item : restaurant.getMenu()) {
-                    System.out.println(item);
+                if (items.isEmpty()) {
+                    System.out.println("No menu items found.");
+                } else {
+                    for (MenuItem item : items) {
+                        System.out.println(item);
+                    }
                 }
             } else {
                 System.out.println("Restaurant not found!");
@@ -386,10 +411,15 @@ public class DatabaseMenu {
         scanner.nextLine(); // Consume newline
 
         try {
+            Address address = addressService.read(id);
+            if (address == null) {
+                System.out.println("Address not found!");
+                return;
+            }
             addressService.delete(id);
             auditService.logAction("DELETE_ADDRESS_VIA_MENU");
             System.out.println("Address deleted successfully!");
-        } catch (Exception e) {
+        } catch (SQLException e) {
             System.out.println("Error deleting address: " + e.getMessage());
         }
     }
@@ -441,13 +471,16 @@ public class DatabaseMenu {
         String name = scanner.nextLine();
         System.out.print("Enter vehicle type: ");
         String vehicleType = scanner.nextLine();
+        System.out.print("Enter license number: ");
+        String licenseNumber = scanner.nextLine();
 
         try {
             Driver driver = new Driver(name, vehicleType);
-            // Add driver to database
+            driver.setLicenseNumber(licenseNumber);
+            driverService.create(driver);
             auditService.logAction("ADD_DRIVER_VIA_MENU");
             System.out.println("Driver added successfully!");
-        } catch (Exception e) {
+        } catch (SQLException e) {
             System.out.println("Error adding driver: " + e.getMessage());
         }
     }
@@ -458,20 +491,31 @@ public class DatabaseMenu {
         scanner.nextLine(); // Consume newline
 
         try {
-            // Delete driver from database
+            Driver driver = driverService.read(id);
+            if (driver == null) {
+                System.out.println("Driver not found!");
+                return;
+            }
+            driverService.delete(id);
             auditService.logAction("DELETE_DRIVER_VIA_MENU");
             System.out.println("Driver deleted successfully!");
-        } catch (Exception e) {
+        } catch (SQLException e) {
             System.out.println("Error deleting driver: " + e.getMessage());
         }
     }
 
     private static void listDrivers() {
         try {
-            // List all drivers from database
+            List<Driver> drivers = driverService.readAll();
             System.out.println("\nAll Drivers:");
-            // Add code to fetch and display drivers
-        } catch (Exception e) {
+            if (drivers.isEmpty()) {
+                System.out.println("No drivers found.");
+            } else {
+                for (Driver driver : drivers) {
+                    System.out.println(driver);
+                }
+            }
+        } catch (SQLException e) {
             System.out.println("Error listing drivers: " + e.getMessage());
         }
     }
@@ -510,21 +554,72 @@ public class DatabaseMenu {
         System.out.print("Enter user ID: ");
         int userId = scanner.nextInt();
         scanner.nextLine(); // Consume newline
+
         System.out.print("Enter restaurant ID: ");
         int restaurantId = scanner.nextInt();
         scanner.nextLine(); // Consume newline
-        System.out.print("Enter delivery address (street): ");
-        String street = scanner.nextLine();
-        System.out.print("Enter delivery address (city): ");
-        String city = scanner.nextLine();
-        System.out.print("Enter delivery address (zip code): ");
-        String zipCode = scanner.nextLine();
 
         try {
-            // Add order to database
+            User user = userService.read(userId);
+            if (user == null) {
+                System.out.println("User not found!");
+                return;
+            }
+
+            Restaurant restaurant = restaurantService.read(restaurantId);
+            if (restaurant == null) {
+                System.out.println("Restaurant not found!");
+                return;
+            }
+
+            // List menu items for the restaurant
+            List<MenuItem> menuItems = menuItemService.readAll();
+            List<MenuItem> restaurantMenuItems = menuItems.stream()
+                    .filter(item -> item.getRestaurantId() == restaurantId)
+                    .toList();
+
+            if (restaurantMenuItems.isEmpty()) {
+                System.out.println("No menu items found for this restaurant!");
+                return;
+            }
+
+            System.out.println("\nAvailable menu items:");
+            for (MenuItem item : restaurantMenuItems) {
+                System.out.println(item);
+            }
+
+            System.out.print("Enter menu item ID: ");
+            int menuItemId = scanner.nextInt();
+            scanner.nextLine(); // Consume newline
+
+            MenuItem selectedItem = restaurantMenuItems.stream()
+                    .filter(item -> item.getId() == menuItemId)
+                    .findFirst()
+                    .orElse(null);
+
+            if (selectedItem == null) {
+                System.out.println("Invalid menu item ID!");
+                return;
+            }
+
+            System.out.print("Enter delivery address ID: ");
+            int addressId = scanner.nextInt();
+            scanner.nextLine(); // Consume newline
+
+            Address deliveryAddress = addressService.read(addressId);
+            if (deliveryAddress == null) {
+                System.out.println("Address not found!");
+                return;
+            }
+
+            List<MenuItem> orderItems = new ArrayList<>();
+            orderItems.add(selectedItem);
+
+            Order order = new Order(user, orderItems, deliveryAddress);
+            orderService.create(order);
             auditService.logAction("ADD_ORDER_VIA_MENU");
             System.out.println("Order added successfully!");
-        } catch (Exception e) {
+        } catch (SQLException e) {
             System.out.println("Error adding order: " + e.getMessage());
         }
     }
@@ -535,20 +630,31 @@ public class DatabaseMenu {
         scanner.nextLine(); // Consume newline
 
         try {
-            // Delete order from database
+            Order order = orderService.read(id);
+            if (order == null) {
+                System.out.println("Order not found!");
+                return;
+            }
+            orderService.delete(id);
             auditService.logAction("DELETE_ORDER_VIA_MENU");
             System.out.println("Order deleted successfully!");
-        } catch (Exception e) {
+        } catch (SQLException e) {
             System.out.println("Error deleting order: " + e.getMessage());
         }
     }
 
     private static void listOrders() {
         try {
-            // List all orders from database
+            List<Order> orders = orderService.readAll();
             System.out.println("\nAll Orders:");
-            // Add code to fetch and display orders
-        } catch (Exception e) {
+            if (orders.isEmpty()) {
+                System.out.println("No orders found.");
+            } else {
+                for (Order order : orders) {
+                    System.out.println(order);
+                }
+            }
+        } catch (SQLException e) {
             System.out.println("Error listing orders: " + e.getMessage());
         }
     }
@@ -587,20 +693,41 @@ public class DatabaseMenu {
         System.out.print("Enter user ID: ");
         int userId = scanner.nextInt();
         scanner.nextLine(); // Consume newline
+
         System.out.print("Enter restaurant ID: ");
         int restaurantId = scanner.nextInt();
         scanner.nextLine(); // Consume newline
-        System.out.print("Enter rating (1-5): ");
-        int rating = scanner.nextInt();
-        scanner.nextLine(); // Consume newline
-        System.out.print("Enter review text: ");
-        String text = scanner.nextLine();
 
         try {
-            // Add review to database
+            User user = userService.read(userId);
+            if (user == null) {
+                System.out.println("User not found!");
+                return;
+            }
+
+            Restaurant restaurant = restaurantService.read(restaurantId);
+            if (restaurant == null) {
+                System.out.println("Restaurant not found!");
+                return;
+            }
+
+            System.out.print("Enter rating (1-5): ");
+            int rating = scanner.nextInt();
+            scanner.nextLine(); // Consume newline
+
+            if (rating < 1 || rating > 5) {
+                System.out.println("Rating must be between 1 and 5!");
+                return;
+            }
+
+            System.out.print("Enter comment: ");
+            String comment = scanner.nextLine();
+
+            Review review = new Review(user, restaurant, rating, comment);
+            reviewService.create(review);
             auditService.logAction("ADD_REVIEW_VIA_MENU");
             System.out.println("Review added successfully!");
-        } catch (Exception e) {
+        } catch (SQLException e) {
             System.out.println("Error adding review: " + e.getMessage());
         }
     }
@@ -611,20 +738,33 @@ public class DatabaseMenu {
         scanner.nextLine(); // Consume newline
 
         try {
-            // Delete review from database
+            Review review = reviewService.read(id);
+            if (review == null) {
+                System.out.println("Review not found!");
+                return;
+            }
+            reviewService.delete(id);
             auditService.logAction("DELETE_REVIEW_VIA_MENU");
             System.out.println("Review deleted successfully!");
-        } catch (Exception e) {
+        } catch (SQLException e) {
             System.out.println("Error deleting review: " + e.getMessage());
         }
     }
 
     private static void listReviews() {
         try {
-            // List all reviews from database
+            List<Review> reviews = reviewService.readAll();
+            if (reviews.isEmpty()) {
+                System.out.println("No reviews found!");
+                return;
+            }
+
             System.out.println("\nAll Reviews:");
-            // Add code to fetch and display reviews
-        } catch (Exception e) {
+            for (Review review : reviews) {
+                System.out.println("\n" + review);
+            }
+            auditService.logAction("LIST_REVIEWS_VIA_MENU");
+        } catch (SQLException e) {
             System.out.println("Error listing reviews: " + e.getMessage());
         }
     }
