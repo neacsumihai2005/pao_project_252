@@ -1,36 +1,44 @@
-package fooddelivery.model;
+package proiect_252.model;
+
+import java.time.LocalDateTime;
 
 public class Review {
+    private int id;
     private User user;
     private Restaurant restaurant;
     private int rating; // 1 to 5
     private String comment;
+    private LocalDateTime reviewDate;
 
     public Review(User user, Restaurant restaurant, int rating, String comment) {
         this.user = user;
         this.restaurant = restaurant;
         this.rating = rating;
         this.comment = comment;
+        this.reviewDate = LocalDateTime.now();
     }
 
-    public User getUser() {
-        return user;
-    }
-
-    public Restaurant getRestaurant() {
-        return restaurant;
-    }
-
-    public int getRating() {
-        return rating;
-    }
-
-    public String getComment() {
-        return comment;
-    }
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
+    public Restaurant getRestaurant() { return restaurant; }
+    public void setRestaurant(Restaurant restaurant) { this.restaurant = restaurant; }
+    public int getRating() { return rating; }
+    public void setRating(int rating) { this.rating = rating; }
+    public String getComment() { return comment; }
+    public void setComment(String comment) { this.comment = comment; }
+    public LocalDateTime getReviewDate() { return reviewDate; }
+    public void setReviewDate(LocalDateTime reviewDate) { this.reviewDate = reviewDate; }
 
     @Override
     public String toString() {
-        return user.getName() + " rated " + restaurant.getName() + ": " + rating + "/5 - " + comment;
+        return "Review{" +
+                "user=" + user +
+                ", restaurant=" + restaurant +
+                ", rating=" + rating +
+                ", comment='" + comment + '\'' +
+                ", reviewDate=" + reviewDate +
+                '}';
     }
 }

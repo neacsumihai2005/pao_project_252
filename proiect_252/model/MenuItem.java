@@ -1,7 +1,9 @@
-package fooddelivery.model;
+package proiect_252.model;
 
-public class MenuItem implements Comparable<MenuItem> {
+public class MenuItem {
+    private int id;
     private String name;
+    private String description;
     private double price;
 
     public MenuItem(String name, double price) {
@@ -9,29 +11,20 @@ public class MenuItem implements Comparable<MenuItem> {
         this.price = price;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public double getPrice() {
-        return price;
-    }
-
-    public void setPrice(double price) {
-        this.price = price;
-    }
-
-    @Override
-    public int compareTo(MenuItem other) {
-        return Double.compare(this.price, other.price);
-    }
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+    public double getPrice() { return price; }
+    public void setPrice(double price) { this.price = price; }
 
     @Override
     public String toString() {
-        return name + " - " + price + " RON";
+        return "MenuItem{" +
+                "name='" + name + '\'' +
+                ", price=" + price +
+                '}';
     }
 }
