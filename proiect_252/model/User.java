@@ -6,6 +6,9 @@ public class User {
     private String email;
     private Address address;
 
+    public User() {
+    }
+
     public User(String name, String email) {
         this.name = name;
         this.email = email;
@@ -23,7 +26,8 @@ public class User {
     @Override
     public String toString() {
         return "User{" +
-                "name='" + name + '\'' +
+                "id=" + id +
+                ", name='" + name + '\'' +
                 ", email='" + email + '\'' +
                 '}';
     }

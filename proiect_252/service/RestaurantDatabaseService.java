@@ -53,7 +53,11 @@ public class RestaurantDatabaseService implements DatabaseService<Restaurant> {
                     Restaurant restaurant = new Restaurant();
                     restaurant.setId(rs.getInt("id"));
                     restaurant.setName(rs.getString("name"));
-                    // Note: You'll need to load the address separately
+                    int addressId = rs.getInt("address_id");
+                    if (addressId > 0) {
+                        AddressDatabaseService addressService = AddressDatabaseService.getInstance();
+                        restaurant.setAddress(addressService.read(addressId));
+                    }
                     auditService.logAction("READ_RESTAURANT");
                     return restaurant;
                 }
@@ -93,11 +97,15 @@ public class RestaurantDatabaseService implements DatabaseService<Restaurant> {
         try (Connection conn = dbConfig.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
+            AddressDatabaseService addressService = AddressDatabaseService.getInstance();
             while (rs.next()) {
                 Restaurant restaurant = new Restaurant();
                 restaurant.setId(rs.getInt("id"));
                 restaurant.setName(rs.getString("name"));
-                // Note: You'll need to load the address separately
+                int addressId = rs.getInt("address_id");
+                if (addressId > 0) {
+                    restaurant.setAddress(addressService.read(addressId));
+                }
                 restaurants.add(restaurant);
             }
             auditService.logAction("READ_ALL_RESTAURANTS");
