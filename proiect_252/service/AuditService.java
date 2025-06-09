@@ -1,4 +1,4 @@
-package service;
+package proiect_252.service;
 
 import java.io.FileWriter;
 import java.io.IOException;

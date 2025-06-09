@@ -1,7 +1,7 @@
-package service;
+package proiect_252.service;
 
-import model.Restaurant;
-import util.DatabaseConfig;
+import proiect_252.model.Restaurant;
+import proiect_252.util.DatabaseConfig;
 
 import java.sql.*;
 import java.util.ArrayList;

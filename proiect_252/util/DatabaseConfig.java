@@ -1,4 +1,4 @@
-package util;
+package proiect_252.util;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
