@@ -1,4 +1,4 @@
-package service;
+package proiect_252.service;
 
 import java.sql.SQLException;
 import java.util.List;

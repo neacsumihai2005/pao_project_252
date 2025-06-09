@@ -25,8 +25,11 @@ public class Main {
             auditService.logAction("CREATE_USERS_AND_DRIVERS");
 
             // === 2. Create restaurants and menus ===
-            Restaurant r1 = new Restaurant("Pizza Time");
-            Restaurant r2 = new Restaurant("Burger House");
+            Address r1Address = new Address("Str. Pizzeria", "București", "010101");
+            Address r2Address = new Address("Str. Burger", "București", "010102");
+            
+            Restaurant r1 = new Restaurant("Pizza Time", r1Address);
+            Restaurant r2 = new Restaurant("Burger House", r2Address);
 
             // Save restaurants to database
             restaurantService.create(r1);

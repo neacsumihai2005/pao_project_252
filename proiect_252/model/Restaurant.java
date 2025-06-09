@@ -9,9 +9,18 @@ public class Restaurant {
     private Address address;
     private List<MenuItem> menu;
 
-    public Restaurant(String name) {
-        this.name = name;
+    public Restaurant() {
         this.menu = new ArrayList<>();
+    }
+
+    public Restaurant(String name) {
+        this();
+        this.name = name;
+    }
+
+    public Restaurant(String name, Address address) {
+        this(name);
+        this.address = address;
     }
 
     public int getId() { return id; }

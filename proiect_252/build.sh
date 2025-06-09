@@ -1,9 +1,9 @@
 #!/bin/bash
 echo "Compiling..."
-javac -d . Main.java
+javac -cp .:mysql-connector-j.jar -d . $(find . -name "*.java")
 if [ $? -ne 0 ]; then
     echo "Compilation failed!"
     exit 1
 fi
 echo "Running..."
-java proiect_252.Main 
+java -cp .:mysql-connector-j.jar proiect_252.Main 
